@@ -1,10 +1,8 @@
 # Dual Attention Transformer Fusion (DATFF) Module 
 
-This is the code for our paper 'Dual Attention Feature Fusion for Visible-Infrared Object Detection' that has been submitted to ICANN2023.
+This is the code for our paper 'Dual Attention Feature Fusion for Visible-Infrared Object Detection' that has been accepted by ICANN2023.
 
 Note that we only include the code for DroneVehicle dataset. The config file of FLIR dataset will be released soon.
-
-More details will be updated upon the acceptance of this paper.
 
 ![DATFF](DATFF.png)
 
