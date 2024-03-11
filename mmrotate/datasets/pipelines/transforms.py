@@ -13,6 +13,41 @@ from numpy import random
 from mmrotate.core import norm_angle, obb2poly_np, poly2obb_np
 from ..builder import ROTATED_PIPELINES
 
+@ROTATED_PIPELINES.register_module()
+class PairedImagesNormalize:
+    # Author:Hu Yuxuan 
+    # Date: 2022/8/8
+    # Normalize the image.
+    def __init__(self, img_norm_cfg1, img_norm_cfg2):
+        self.mean = [np.array(img_norm_cfg1['mean'], dtype=np.float32), 
+                    np.array(img_norm_cfg2['mean'], dtype=np.float32)]
+        self.std = [np.array(img_norm_cfg1['std'], dtype=np.float32), 
+                    np.array(img_norm_cfg2['std'], dtype=np.float32)]
+        self.to_rgb = [img_norm_cfg1['to_rgb'], img_norm_cfg2['to_rgb']]
+
+    def __call__(self, results):
+        """Call function to normalize images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Normalized results, 'img_norm_cfg' key is added into
+                result dict.
+        """
+        for idx, key in enumerate(results.get('img_fields', ['img1', 'img2'])):
+            results[key] = mmcv.imnormalize(results[key], self.mean[idx], self.std[idx],
+                                            self.to_rgb[idx])
+        results['img_norm_cfg1'] = dict(
+            mean=self.mean[0], std=self.std[0], to_rgb=self.to_rgb[0])
+        results['img_norm_cfg2'] = dict(
+            mean=self.mean[1], std=self.std[1], to_rgb=self.to_rgb[1])
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(mean={self.mean}, std={self.std}, to_rgb={self.to_rgb})'
+        return repr_str
 
 @ROTATED_PIPELINES.register_module()
 class RResize(Resize):
