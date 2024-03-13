@@ -8,8 +8,7 @@ Note that we only include the code for DroneVehicle dataset. The config file of 
 
 ## About the code
 
-Our code is build on mmrotate==0.3.4. We only present the modifications we have made to the mmrotate codebase. So you should put the python files under right locations and
-register them in '\_\_init\_\_.py'.
+Our code is build on mmrotate==0.3.4 and mmdetection==2.26.0. We only present the modifications we have made to the mmrotate codebase. So you should first install mmcv, mmdetection and mmrotate, then put the python files under correct locations and register them in '\_\_init\_\_.py'.
 
 ## About the dataset
 
