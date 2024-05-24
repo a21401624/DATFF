@@ -5,9 +5,9 @@ import numpy as np
 import torch
 from mmcv.parallel import DataContainer as DC
 
-from ..builder import ROTATED_PIPELINES
+from ..builder import PIPELINES
 
-@ROTATED_PIPELINES.register_module()
+@PIPELINES.register_module()
 class PairedImagesDefaultFormatBundle:
     # Author: Yuxuan Hu 
     # Date: 2022/8/8
@@ -66,7 +66,7 @@ class PairedImagesDefaultFormatBundle:
         return self.__class__.__name__
 
 
-@ROTATED_PIPELINES.register_module()
+@PIPELINES.register_module()
 class PairedImagesCollect:
     # Author: Yuxuan Hu 
     # Date: 2022/8/8
