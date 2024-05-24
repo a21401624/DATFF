@@ -1,7 +1,7 @@
-# Author: Hu Yuxuan
+# Author: Yuxuan Hu
 # Date: 2022/3/1
 from ..builder import ROTATED_DETECTORS
-from .bimodal_two_stage import BimodalRotatedTwoStageDetector
+from .bimodal_rotated_two_stage import BimodalRotatedTwoStageDetector
 
 
 @ROTATED_DETECTORS.register_module()

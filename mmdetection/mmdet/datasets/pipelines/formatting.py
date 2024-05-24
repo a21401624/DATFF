@@ -9,7 +9,7 @@ from ..builder import ROTATED_PIPELINES
 
 @ROTATED_PIPELINES.register_module()
 class PairedImagesDefaultFormatBundle:
-    # Author:Hu Yuxuan 
+    # Author: Yuxuan Hu 
     # Date: 2022/8/8
     """Default formatting bundle.
 
@@ -68,7 +68,7 @@ class PairedImagesDefaultFormatBundle:
 
 @ROTATED_PIPELINES.register_module()
 class PairedImagesCollect:
-    # Author:Hu Yuxuan 
+    # Author: Yuxuan Hu 
     # Date: 2022/8/8
     """Collect data from the loader relevant to the specific task.
 

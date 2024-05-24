@@ -1,5 +1,7 @@
-# Author: Hu Yuxuan
+# Author: Yuxuan Hu
 # Modified: 2022/8/18
+#           2023/7/15
+#           2024/3/26
 # Bug Fix: 2022/9/16 
 # Test images with no GT bboxes.
 import os
@@ -17,7 +19,7 @@ from .builder import ROTATED_DATASETS
 
 
 @ROTATED_DATASETS.register_module()
-class DroneVehicleDataset(CustomDataset):
+class RDroneVehicleDataset(CustomDataset):
     """Modified from DOTA Dataset.
 
     Args:
@@ -50,7 +52,7 @@ class DroneVehicleDataset(CustomDataset):
                     self.NEW_CLASSES.append(self.CLASSES[i])
             self.CLASSES = tuple(self.NEW_CLASSES)
 
-        super(DroneVehicleDataset, self).__init__(ann_file, pipeline, **kwargs)
+        super(RDroneVehicleDataset, self).__init__(ann_file, pipeline, **kwargs)
 
     def __len__(self):
         """Total number of samples of data."""
@@ -212,12 +214,24 @@ class DroneVehicleDataset(CustomDataset):
         eval_results = {}
         if metric == 'mAP':
             assert isinstance(iou_thr, float)
+
+            # If the results have logvar, we split the bbox results.
+            if type(results[0][0]) == tuple:
+                results_rbbox = []
+                for result in results:
+                    result_bbox = []
+                    for i in range(len(result)):
+                        result_bbox.append(result[i][0])
+                    results_rbbox.append(result_bbox)
+            else:
+                results_rbbox = results
+
             mean_ap, _ = eval_rbbox_map(
-                results,
+                results_rbbox,
                 annotations,
                 scale_ranges=scale_ranges,
                 iou_thr=iou_thr,
-                use_07_metric=True,
+                use_07_metric=False,
                 dataset=self.CLASSES,
                 logger=logger,
                 nproc=nproc)

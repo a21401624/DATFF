@@ -1,18 +1,15 @@
-# Author: Hu Yuxuan
-# Date: 2022/3/1
-# Modified: 2022/3/25
-#           2022/3/26
-#           2022/10/8
+# Author: Yuxuan Hu
+# Date: 2022/8/25
 import warnings
 import torch
 
-from ..builder import ROTATED_DETECTORS, build_backbone, build_head, build_neck
-from .base import RotatedBaseDetector
+from ..builder import DETECTORS, build_backbone, build_head, build_neck
+from .base import BaseDetector
 from mmcv.runner import auto_fp16
 
 
-@ROTATED_DETECTORS.register_module()
-class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
+@DETECTORS.register_module()
+class BimodalTwoStageDetector(BaseDetector):
 
     def __init__(self,
                  backbone1,
@@ -25,7 +22,7 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
                  test_cfg=None,
                  pretrained=None,
                  init_cfg=None):
-        super(BimodalRotatedTwoStageDetector, self).__init__(init_cfg)
+        super(BimodalTwoStageDetector, self).__init__(init_cfg)
         if pretrained:
             warnings.warn('DeprecationWarning: pretrained is deprecated, '
                           'please use "init_cfg" instead')
@@ -68,20 +65,22 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
         """bool: whether the detector has a RoI head"""
         return hasattr(self, 'roi_head') and self.roi_head is not None
 
-    def extract_feat_train(self, img1, img2, **kwargs):
+    def extract_feat_train(self, img1, img2, img_metas, **kwargs):
         """Directly extract features from the backbone+neck."""
         x1 = self.backbone1(img1)
         x2 = self.backbone2(img2)
         if self.fusion_neck.has_train_loss():
-            fusion_loss, x = self.fusion_neck.forward_train(x1, x2, **kwargs)
+            fusion_loss, x = self.fusion_neck.forward_train(x1, x2, 
+                img1=img1, img2=img2, img_metas=img_metas, **kwargs)
         else:
-            x = self.fusion_neck(x1, x2, **kwargs)
+            x = self.fusion_neck(x1, x2, 
+                img1=img1, img2=img2, img_metas=img_metas, **kwargs)
             fusion_loss = {}
         if self.with_neck:
             x = self.neck(x)
         return fusion_loss, x
 
-    def extract_feat(self, img1, img2, **kwargs):
+    def extract_feat(self, img1, img2, img_metas, **kwargs):
         """Directly extract features from the backbone+neck.
            As extract_feat is an abstrct class that we must implement it, this 'extract_feat' 
            is indeed 'extract_feat_test'.
@@ -89,9 +88,11 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
         x1 = self.backbone1(img1)
         x2 = self.backbone2(img2)
         if self.fusion_neck.has_train_loss():
-            x = self.fusion_neck.forward_test(x1, x2, **kwargs)
+            x = self.fusion_neck.forward_test(x1, x2, 
+                img1=img1, img2=img2, img_metas=img_metas, **kwargs)
         else:
-            x = self.fusion_neck(x1, x2, **kwargs)
+            x = self.fusion_neck(x1, x2, 
+                img1=img1, img2=img2, img_metas=img_metas, **kwargs)
         if self.with_neck:
             x = self.neck(x)
         return x
@@ -124,7 +125,7 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
         if self.with_rpn:
             rpn_outs = self.rpn_head(x)
             outs = outs + (rpn_outs, )
-        proposals = torch.randn(1000, 6).to(img1.device)
+        proposals = torch.randn(1000, 4).to(img1.device)
         # roi_head
         roi_outs = self.roi_head.forward_dummy(x, proposals)
         outs = outs + (roi_outs, )
@@ -152,7 +153,7 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
                 `mmdet/datasets/pipelines/formatting.py:Collect`.
 
             gt_bboxes (list[Tensor]): Ground truth bboxes for each image with
-                shape (num_gts, 5) in [cx, cy, w, h, a] format.
+                shape (num_gts, 4) in [tl_x, tl_y, br_x, br_y] format.
 
             gt_labels (list[Tensor]): class indices corresponding to each box
 
@@ -170,7 +171,7 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
         """
         losses = dict()
 
-        fusion_loss, x = self.extract_feat_train(img1, img2, **kwargs)
+        fusion_loss, x = self.extract_feat_train(img1, img2, img_metas, **kwargs)
         losses.update(fusion_loss)
 
         # RPN forward and loss
@@ -236,7 +237,7 @@ class BimodalRotatedTwoStageDetector(RotatedBaseDetector):
         """Test without augmentation."""
 
         assert self.with_bbox, 'Bbox head must be implemented.'
-        x = self.extract_feat(img1, img2, **kwargs)
+        x = self.extract_feat(img1, img2, img_metas, **kwargs)
         if proposals is None:
             proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
         else:

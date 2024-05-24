@@ -1,17 +1,18 @@
-# Author: Hu Yuxuan
+# Author: Yuxuan Hu
 # Date: 2022/3/1
 # Modified: 2022/8/18
+#           2024/3/26
 import warnings
 
 import mmcv
 
 from .builder import DATASETS
 from mmdet.datasets.pipelines import Compose
-from .DroneVehicle import DroneVehicleDataset
+from .RDroneVehicle import RDroneVehicleDataset
 
 
 @DATASETS.register_module()
-class BimodalDroneVehicleDataset(DroneVehicleDataset):
+class BimodalRDroneVehicleDataset(RDroneVehicleDataset):
     """Load a pair of images, with one set of annotations. 
         
     Args:
