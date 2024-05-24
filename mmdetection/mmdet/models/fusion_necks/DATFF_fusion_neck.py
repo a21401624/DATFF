@@ -9,7 +9,7 @@ from einops import rearrange
 from mmcv.runner import BaseModule, auto_fp16
 from mmdet.models.builder import NECKS
 
-from ..Trm_utils import TrmBlock, PositionalEmbedding, ParTrmDecoder
+from .Trm_utils import TrmBlock, PositionalEmbedding, ParTrmDecoder
 
 @NECKS.register_module()
 class DATFFFusionNeck(BaseModule):

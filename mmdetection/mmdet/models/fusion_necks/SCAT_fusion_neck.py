@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from mmcv.runner import BaseModule, auto_fp16
-from ..Trm_utils import ParTrmDecoder, PositionalEmbedding
+from .Trm_utils import ParTrmDecoder, PositionalEmbedding
 from mmdet.models.builder import NECKS
 
 @NECKS.register_module()
