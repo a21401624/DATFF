@@ -26,7 +26,7 @@ class DroneVehicleDataset(CustomDataset):
         difficulty (bool, optional): The difficulty threshold of GT.
     """
 
-    CLASSES = ("car", "truck", "bus", "freight car")
+    CLASSES = ("car", "truck", "bus", "van", "freight car")
     W = 640
     H = 512
 
