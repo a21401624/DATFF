@@ -7,10 +7,13 @@ from mmcv.parallel import DataContainer as DC
 
 from ..builder import PIPELINES
 
+
 @PIPELINES.register_module()
-class PairedImagesDefaultFormatBundle:
-    # Author: Yuxuan Hu 
+class PairedImagesDefaultFormatBundle(DefaultFormatBundle):
+    # Author: Yuxuan Hu
     # Date: 2022/8/8
+    # Modified: 2024/4/14
+    #           2024/5/13
     """Default formatting bundle.
 
     It simplifies the pipeline of formatting common fields, including "img",
@@ -40,18 +43,30 @@ class PairedImagesDefaultFormatBundle:
 
         if 'img1' in results:
             img1 = results['img1']
+            if self.img_to_float is True and img1.dtype == np.uint8:
+                # Normally, image is of uint8 type without normalization.
+                # At this time, it needs to be forced to be converted to
+                # flot32, otherwise the model training and inference
+                # will be wrong. Only used for YOLOX currently .
+                img1 = img1.astype(np.float32)
             if len(img1.shape) < 3:
                 img1 = np.expand_dims(img1, -1)
             img1 = np.ascontiguousarray(img1.transpose(2, 0, 1))
             results['img1'] = DC(to_tensor(img1), stack=True)
         if 'img2' in results:
             img2 = results['img2']
+            if self.img_to_float is True and img2.dtype == np.uint8:
+                # Normally, image is of uint8 type without normalization.
+                # At this time, it needs to be forced to be converted to
+                # flot32, otherwise the model training and inference
+                # will be wrong. Only used for YOLOX currently .
+                img2 = img2.astype(np.float32)
             if len(img2.shape) < 3:
                 img2 = np.expand_dims(img2, -1)
             img2 = np.ascontiguousarray(img2.transpose(2, 0, 1))
             results['img2'] = DC(to_tensor(img2), stack=True)
         for key in ['proposals', 'gt_bboxes', 'gt_bboxes1', 'gt_bboxes2', 
-                    'gt_bboxes_ignore', 'gt_labels']:
+                    'gt_bboxes_ignore', 'gt_labels', 'img2_labels']:
             if key not in results:
                 continue
             results[key] = DC(to_tensor(results[key]))
@@ -61,9 +76,6 @@ class PairedImagesDefaultFormatBundle:
             results['gt_semantic_seg'] = DC(
                 to_tensor(results['gt_semantic_seg'][None, ...]), stack=True)
         return results
-
-    def __repr__(self):
-        return self.__class__.__name__
 
 
 @PIPELINES.register_module()
